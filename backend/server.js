@@ -3,9 +3,17 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+
 //const connectDB = require('./config/db');
+
 const voterRoutes = require('./routes/voterRoutes');
 const candidateRoutes = require('./routes/candidateRoutes');
+const electionProgressRoutes = require('./routes/electionProgressRoutes'); // Election Monitoring
+const electionResultsRoutes = require('./routes/electionResultsRoutes');   // Results Publishing
+const pollingStationRoutes = require('./routes/pollingStationRoutes');         // Polling Station Management
+const feedbackRoutes = require('./routes/feedbackRoutes');                 // User Feedback Collection
+const fraudDetectionRoutes = require('./routes/fraudDetectionRoutes'); // Fraud Detection and Security Monitoring
+
 
 dotenv.config();
 //connectDB();
@@ -24,6 +32,13 @@ mongoose
 // API Routes
 app.use('/api/voters', voterRoutes); // Voter management routes
 app.use('/api/candidates', candidateRoutes); // Candidate management routes
+app.use('/api/elections', electionProgressRoutes);     // Election Monitoring routes
+app.use('/api/results', electionResultsRoutes);        // Results Publishing routes
+app.use('/api/polling-stations', pollingStationRoutes);  // Polling Station Management routes
+app.use('/api/feedback', feedbackRoutes);                // User Feedback Collection routes
+app.use('/api/fraud-detection', fraudDetectionRoutes); // fraud detection routes
+
+
 
 // Start the server
 const PORT = process.env.PORT || 5000;
