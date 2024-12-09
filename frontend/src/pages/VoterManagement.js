@@ -1,334 +1,194 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import '../styles/VoterManagement.css'; // Assuming you have a CSS file for styling
 
-const VoterManagement = () => {
+function VoterManagement() {
   const [voters, setVoters] = useState([]);
-  const [newVoter, setNewVoter] = useState({
+  const [constituencies, setConstituencies] = useState([]); // For dropdown
+  const [formData, setFormData] = useState({
+    cnic: '',
     name: '',
     email: '',
-    cnic: '',
-    contactNo: '',
+    phone: '',
+    province: '',
+    city: '',
+    constituency: '',
+    dateOfBirth: '',
+    password: '',
   });
-  const [editingVoter, setEditingVoter] = useState(null); // For editing voter info
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingVoterId, setEditingVoterId] = useState(null);
 
-  // Fetch voters from the backend
+  // Fetch all voters
   const fetchVoters = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/voters`);
+      const response = await axios.get('/api/voters');
       setVoters(response.data);
     } catch (error) {
       console.error('Error fetching voters:', error);
     }
   };
 
-  // Register a new voter
-  const handleRegister = async () => {
+  // Fetch all constituencies
+  const fetchConstituencies = async () => {
     try {
-      if (!/^3\d{4}-\d{7}-\d{1}$/.test(newVoter.cnic)) {
-        alert('Invalid CNIC format. Format: 3xxxx-xxxxxxx-x');
-        return;
-      }
-      if (!/^\d{11}$/.test(newVoter.contactNo)) {
-        alert('Contact number must be 11 digits');
-        return;
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newVoter.email)) {
-        alert('Invalid email format');
-        return;
-      }
-
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/register`, newVoter);
-      console.log('Registering voter:', newVoter);
-      fetchVoters(); // Refresh the voter list
-      setNewVoter({ name: '', email: '', cnic: '', contactNo: '' });
+      const response = await axios.get('/api/constituencies');
+      setConstituencies(response.data);
     } catch (error) {
-      console.error('Error registering voter:', error);
+      console.error('Error fetching constituencies:', error);
     }
   };
 
-  // Update voter status (approve/reject)
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Handle form submission
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const dataToSend = {
+        ...formData,
+        address: {
+          province: formData.province,
+          city: formData.city,
+          constituency: formData.constituency,
+        },
+      };
+
+      if (isEditing) {
+        await axios.put(`/api/voters/${editingVoterId}`, dataToSend);
+        setIsEditing(false);
+        setEditingVoterId(null);
+      } else {
+        await axios.post('/api/voters/register', dataToSend);
+      }
+
+      setFormData({
+        cnic: '',
+        name: '',
+        email: '',
+        phone: '',
+        province: '',
+        city: '',
+        constituency: '',
+        dateOfBirth: '',
+        password: '',
+      });
+      fetchVoters();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    }
+  };
+
+  // Handle delete voter
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/api/voters/${id}`);
+      fetchVoters();
+    } catch (error) {
+      console.error('Error deleting voter:', error);
+    }
+  };
+
+  // Handle edit voter
+  const handleEdit = (voter) => {
+    setFormData({
+      ...voter,
+      province: voter.address.province,
+      city: voter.address.city,
+      constituency: voter.address.constituency,
+    });
+    setIsEditing(true);
+    setEditingVoterId(voter._id);
+  };
+
+  // Approve or reject voter
   const handleStatusUpdate = async (id, status) => {
     try {
-      await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/api/voters/${id}/status`, { status });
-      fetchVoters(); // Refresh the voter list
+      await axios.patch(`/api/voters/${id}/status`, { status });
+      fetchVoters();
     } catch (error) {
-      console.error('Error updating voter status:', error);
+      console.error('Error updating status:', error);
     }
   };
 
-  // Update voter information
-  const handleUpdateVoter = async () => {
+  // Update eligibility
+  const handleEligibilityUpdate = async (id, eligibility) => {
     try {
-      if (!/^3\d{4}-\d{7}-\d{1}$/.test(editingVoter.cnic)) {
-        alert('Invalid CNIC format. Format: 3xxxx-xxxxxxx-x');
-        return;
-      }
-      if (!/^\d{11}$/.test(editingVoter.contactNo)) {
-        alert('Contact number must be 11 digits');
-        return;
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editingVoter.email)) {
-        alert('Invalid email format');
-        return;
-      }
-
-      await axios.put(
-        `${process.env.REACT_APP_BACKEND_URL}/api/voters/${editingVoter._id}`,
-        editingVoter
-      );
-      setEditingVoter(null); // Close the edit form
-      fetchVoters(); // Refresh the voter list
+      await axios.patch(`/api/voters/${id}/eligibility`, { eligibility });
+      fetchVoters();
     } catch (error) {
-      console.error('Error updating voter:', error);
+      console.error('Error updating eligibility:', error);
     }
   };
 
   useEffect(() => {
     fetchVoters();
+    fetchConstituencies();
   }, []);
 
   return (
-    <div>
+    <div className="voter-management">
       <h1>Voter Management</h1>
+      <form onSubmit={handleFormSubmit}>
+        <input type="text" name="cnic" placeholder="CNIC" value={formData.cnic} onChange={handleInputChange} required />
+        <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleInputChange} required />
+        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} />
+        <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleInputChange} required />
+        <input type="text" name="province" placeholder="Province" value={formData.province} onChange={handleInputChange} required />
+        <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleInputChange} required />
+        <select name="constituency" value={formData.constituency} onChange={handleInputChange} required>
+          <option value="" disabled>Select Constituency</option>
+          {constituencies.map((c) => (
+            <option key={c._id} value={c._id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        <input type="date" name="dateOfBirth" placeholder="Date of Birth" value={formData.dateOfBirth} onChange={handleInputChange} required />
+        <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleInputChange} required />
+        <button type="submit">{isEditing ? 'Update Voter' : 'Add Voter'}</button>
+      </form>
 
-      <div>
-        <h2>Register New Voter</h2>
-        <input
-          type="text"
-          placeholder="Name"
-          value={newVoter.name}
-          onChange={(e) => setNewVoter({ ...newVoter, name: e.target.value })}
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={newVoter.email}
-          onChange={(e) => setNewVoter({ ...newVoter, email: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="CNIC (3xxxx-xxxxxxx-x)"
-          value={newVoter.cnic}
-          onChange={(e) => setNewVoter({ ...newVoter, cnic: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Contact Number (11 digits)"
-          value={newVoter.contactNo}
-          onChange={(e) => setNewVoter({ ...newVoter, contactNo: e.target.value })}
-        />
-        <button onClick={handleRegister}>Register</button>
-      </div>
-
-      <div>
-        <h2>Voter List</h2>
+      <div className="voter-list">
         <table>
           <thead>
             <tr>
+              <th>CNIC</th>
               <th>Name</th>
               <th>Email</th>
-              <th>CNIC</th>
-              <th>Contact</th>
-              <th>Status</th>
+              <th>Phone</th>
+              <th>Province</th>
+              <th>City</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {voters.map((voter) => (
               <tr key={voter._id}>
+                <td>{voter.cnic}</td>
                 <td>{voter.name}</td>
                 <td>{voter.email}</td>
-                <td>{voter.cnic}</td>
-                <td>{voter.contactNo}</td>
-                <td>{voter.status}</td>
+                <td>{voter.phone}</td>
+                <td>{voter.address.province}</td>
+                <td>{voter.address.city}</td>
                 <td>
+                  <button onClick={() => handleEdit(voter)}>Edit</button>
+                  <button onClick={() => handleDelete(voter._id)}>Delete</button>
                   <button onClick={() => handleStatusUpdate(voter._id, 'approved')}>Approve</button>
                   <button onClick={() => handleStatusUpdate(voter._id, 'rejected')}>Reject</button>
-                  <button onClick={() => setEditingVoter(voter)}>Edit</button>
+                  <button onClick={() => handleEligibilityUpdate(voter._id, true)}>Make Eligible</button>
+                  <button onClick={() => handleEligibilityUpdate(voter._id, false)}>Revoke Eligibility</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      {editingVoter && (
-        <div style={{ marginTop: '20px' }}>
-          <h2>Edit Voter Information</h2>
-          <input
-            type="text"
-            placeholder="Name"
-            value={editingVoter.name}
-            onChange={(e) => setEditingVoter({ ...editingVoter, name: e.target.value })}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={editingVoter.email}
-            onChange={(e) => setEditingVoter({ ...editingVoter, email: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="CNIC (3xxxx-xxxxxxx-x)"
-            value={editingVoter.cnic}
-            onChange={(e) => setEditingVoter({ ...editingVoter, cnic: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="Contact Number (11 digits)"
-            value={editingVoter.contactNo}
-            onChange={(e) => setEditingVoter({ ...editingVoter, contactNo: e.target.value })}
-          />
-          <button onClick={handleUpdateVoter}>Save Changes</button>
-          <button onClick={() => setEditingVoter(null)}>Cancel</button>
-        </div>
-      )}
     </div>
   );
-};
+}
 
 export default VoterManagement;
-
-/*import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-
-const VoterManagement = () => {
-  const [voters, setVoters] = useState([]);
-  const [newVoter, setNewVoter] = useState({
-    name: '',
-    email: '',
-    cnic: '',
-    contactNo: '',
-  });
-
-  // Fetch voters from the backend
-  const fetchVoters = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/voters`);
-      setVoters(response.data);
-    } catch (error) {
-      console.error('Error fetching voters:', error);
-    }
-  };
-
-  // Register a new voter
-  const handleRegister = async () => {
-    try {
-      if (!/^3\d{4}-\d{7}-\d{1}$/.test(newVoter.cnic)) {
-        alert('Invalid CNIC format. Format: 3xxxx-xxxxxxx-x');
-        return;
-      }
-      if (!/^\d{11}$/.test(newVoter.contactNo)) {
-        alert('Contact number must be 11 digits');
-        return;
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newVoter.email)) {
-        alert('Invalid email format');
-        return;
-      }
-
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/voters/register`, newVoter);
-      fetchVoters(); // Refresh the voter list
-      setNewVoter({ name: '', email: '', cnic: '', contactNo: '' });
-    } catch (error) {
-      console.error('Error registering voter:', error);
-    }
-  };
-
-  // Update voter status (approve/reject)
-  const handleStatusUpdate = async (id, status) => {
-    try {
-      await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/api/voters/${id}/status`, { status });
-      fetchVoters(); // Refresh the voter list
-    } catch (error) {
-      console.error('Error updating voter status:', error);
-    }
-  };
-
-  // Update voter information
-  const handleUpdateVoter = async (id, updatedData) => {
-    try {
-      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/voters/${id}`, updatedData);
-      fetchVoters(); // Refresh the voter list
-    } catch (error) {
-      console.error('Error updating voter:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchVoters();
-  }, []);
-
-  return (
-    <div>
-      <h1>Voter Management</h1>
-      
-      <div>
-        <h2>Register New Voter</h2>
-        <input
-          type="text"
-          placeholder="Name"
-          value={newVoter.name}
-          onChange={(e) => setNewVoter({ ...newVoter, name: e.target.value })}
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={newVoter.email}
-          onChange={(e) => setNewVoter({ ...newVoter, email: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="CNIC (3xxxx-xxxxxxx-x)"
-          value={newVoter.cnic}
-          onChange={(e) => setNewVoter({ ...newVoter, cnic: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Contact Number (11 digits)"
-          value={newVoter.contactNo}
-          onChange={(e) => setNewVoter({ ...newVoter, contactNo: e.target.value })}
-        />
-        <button onClick={handleRegister}>Register</button>
-      </div>
-
-      <div>
-        <h2>Voter List</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>CNIC</th>
-              <th>Contact</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {voters.map((voter) => (
-              <tr key={voter._id}>
-                <td>{voter.name}</td>
-                <td>{voter.email}</td>
-                <td>{voter.cnic}</td>
-                <td>{voter.contactNo}</td>
-                <td>{voter.status}</td>
-                <td>
-                  <button onClick={() => handleStatusUpdate(voter._id, 'approved')}>Approve</button>
-                  <button onClick={() => handleStatusUpdate(voter._id, 'rejected')}>Reject</button>
-                  {// You can add a form to update voter info here }
-                  </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      );
-    };
-    
-    export default VoterManagement;
-    
-    
-    */
-    

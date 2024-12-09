@@ -22,6 +22,7 @@ const validateVoterInput = (req, res, next) => {
   }
 
   // Validate address
+  console.log('Request Body:', req.body);
   const { province, city, constituency } = address || {};
   if (!province || !['Punjab', 'Sindh', 'Balochistan', 'Khyber Pakhtunkhwa', 'Islamabad'].includes(province)) {
     return res.status(400).json({ error: 'Province is required and must be valid' });

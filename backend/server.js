@@ -13,6 +13,8 @@ const electionResultsRoutes = require('./routes/electionResultsRoutes');   // Re
 const pollingStationRoutes = require('./routes/pollingStationRoutes');         // Polling Station Management
 const feedbackRoutes = require('./routes/feedbackRoutes');                 // User Feedback Collection
 const fraudDetectionRoutes = require('./routes/fraudDetectionRoutes'); // Fraud Detection and Security Monitoring
+const constituencyRoutes = require('./routes/constituencyRoutes'); // Import the route
+const userRoutes = require('./routes/userRoutes');
 
 
 dotenv.config();
@@ -37,7 +39,8 @@ app.use('/api/results', electionResultsRoutes);        // Results Publishing rou
 app.use('/api/polling-stations', pollingStationRoutes);  // Polling Station Management routes
 app.use('/api/feedback', feedbackRoutes);                // User Feedback Collection routes
 app.use('/api/fraud-detection', fraudDetectionRoutes); // fraud detection routes
-
+app.use('/api/constituencies', constituencyRoutes); // Add route to the server
+app.use('/api/users', userRoutes); // Add user-related routes
 
 
 // Start the server

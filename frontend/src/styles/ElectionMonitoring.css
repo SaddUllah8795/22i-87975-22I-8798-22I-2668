@@ -1,0 +1,126 @@
+.election-monitoring {
+    padding: 2rem;
+    font-family: Arial, sans-serif;
+  }
+  
+  .election-list {
+    margin-bottom: 2rem;
+  }
+  
+  .election-list h2 {
+    color: green;
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  .election-list ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .election-list li {
+    margin-bottom: 1rem;
+  }
+  
+  .election-list button {
+    background-color: green;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .election-list button:hover {
+    background-color: darkgreen;
+  }
+  
+  .election-progress {
+    border: 1px solid green;
+    padding: 1rem;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+  }
+  
+  .election-progress h2 {
+    color: green;
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  .regions {
+    margin-top: 1rem;
+  }
+  
+  .region {
+    margin-bottom: 1.5rem;
+  }
+  
+  .region p, .city p {
+    margin: 0.5rem 0;
+  }
+  
+  .cities {
+    margin-left: 1rem;
+  }
+  
+  /* Responsive styles */
+  @media screen and (max-width: 768px) {
+    .election-monitoring {
+      padding: 1rem;
+    }
+  
+    .election-list h2 {
+      font-size: 1.3rem;
+    }
+  
+    .election-list button {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+    }
+  
+    .election-progress {
+      padding: 0.8rem;
+    }
+  
+    .election-progress h2 {
+      font-size: 1.3rem;
+    }
+  
+    .region p, .city p {
+      font-size: 0.9rem;
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .election-monitoring {
+      padding: 0.5rem;
+    }
+  
+    .election-list h2 {
+      font-size: 1.1rem;
+    }
+  
+    .election-list button {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+    }
+  
+    .election-progress {
+      padding: 0.5rem;
+    }
+  
+    .election-progress h2 {
+      font-size: 1.1rem;
+    }
+  
+    .region p, .city p {
+      font-size: 0.8rem;
+    }
+  
+    .cities {
+      margin-left: 0.5rem;
+    }
+  }
+  

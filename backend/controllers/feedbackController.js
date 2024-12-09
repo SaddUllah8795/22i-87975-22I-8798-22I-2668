@@ -1,27 +1,14 @@
 const Feedback = require('../models/Feedback');
-const Voter = require('../models/Voter');
-const Election = require('../models/Election');
 
 // Submit feedback
 const submitFeedback = async (req, res) => {
   try {
-    const { voterId, electionId, comments, rating } = req.body;
-
-    // Validate voter and election existence
-    const voter = await Voter.findById(voterId);
-    if (!voter) {
-      return res.status(404).json({ error: 'Voter not found' });
-    }
-
-    const election = await Election.findById(electionId);
-    if (!election) {
-      return res.status(404).json({ error: 'Election not found' });
-    }
+    const { voter, election, comments, rating } = req.body;
 
     // Save feedback
     const feedback = new Feedback({
-      voter: voterId,
-      election: electionId,
+      voter, // Store voter as string
+      election, // Store election as string
       comments,
       rating,
     });
@@ -29,6 +16,7 @@ const submitFeedback = async (req, res) => {
     await feedback.save();
     res.status(201).json({ message: 'Feedback submitted successfully', feedback });
   } catch (error) {
+    console.error('Error submitting feedback:', error.message); // Debugging log
     res.status(500).json({ error: error.message });
   }
 };
@@ -38,13 +26,15 @@ const getElectionFeedback = async (req, res) => {
   try {
     const { electionId } = req.params;
 
-    const feedbacks = await Feedback.find({ election: electionId }).populate('voter', 'name email');
+    // Find feedback by election string
+    const feedbacks = await Feedback.find({ election: electionId });
     if (!feedbacks.length) {
       return res.status(404).json({ message: 'No feedback found for this election' });
     }
 
     res.status(200).json(feedbacks);
   } catch (error) {
+    console.error('Error retrieving feedback:', error.message); // Debugging log
     res.status(500).json({ error: error.message });
   }
 };
@@ -54,6 +44,7 @@ const analyzeFeedback = async (req, res) => {
   try {
     const { electionId } = req.params;
 
+    // Find feedback by election string
     const feedbacks = await Feedback.find({ election: electionId });
     if (!feedbacks.length) {
       return res.status(404).json({ message: 'No feedback found for this election' });
@@ -66,9 +57,10 @@ const analyzeFeedback = async (req, res) => {
     res.status(200).json({
       totalFeedbacks,
       averageRating,
-      comments: feedbacks.map(feedback => feedback.comments),
+      comments: feedbacks.map((feedback) => feedback.comments),
     });
   } catch (error) {
+    console.error('Error analyzing feedback:', error.message); // Debugging log
     res.status(500).json({ error: error.message });
   }
 };
