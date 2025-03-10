@@ -8,7 +8,7 @@ const cors = require('cors');
 
 const voterRoutes = require('./routes/voterRoutes');
 const candidateRoutes = require('./routes/candidateRoutes');
-const electionProgressRoutes = require('./routes/electionProgressRoutes'); // Election Monitoring
+const electionProgressRoutes = require('./routes/electionProgressRoutes'); 
 const electionResultsRoutes = require('./routes/electionResultsRoutes');   // Results Publishing
 const pollingStationRoutes = require('./routes/pollingStationRoutes');         // Polling Station Management
 const feedbackRoutes = require('./routes/feedbackRoutes');                 // User Feedback Collection
