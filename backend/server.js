@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 
-//const connectDB = require('./config/db');
+
 
 const voterRoutes = require('./routes/voterRoutes');
 const candidateRoutes = require('./routes/candidateRoutes');
